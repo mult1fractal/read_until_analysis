@@ -32,7 +32,7 @@ println "\u001B[32mProfile: $workflow.profile\033[0m"
 println " "
 println "\033[2mCurrent User: $workflow.userName"
 println "Nextflow-version: $nextflow.version"
-println "WtP intended for Nextflow-version: 20.01.0"
+println "This workflow intended for Nextflow-version: 20.01.0"
 println "Starting time: $nextflow.timestamp"
 println "Workdir location [--workdir]:"
 println "  $workflow.workDir"
@@ -47,14 +47,18 @@ println " "
 /************* 
 * INPUT HANDLING
 *************/
-
-// gets only full dir 
-if (params.dir && params.read_until_file) { dir_input_ch = Channel
+if ( workflow.profile == 'standard' ) { "Using default profile [-profile local,docker]" }
+// get basecalled dir
+dir_input_ch = Channel
         .fromPath( params.dir, checkIfExists: true )
         .map 
-        .view() }
-else 
-    :
+        .view()
+
+// get read_until.csv
+read_until_ch = Channel
+        .fromPath() params.read_until,checkIfExists: true )
+        .map
+        .view()
 
 
 /************* 
