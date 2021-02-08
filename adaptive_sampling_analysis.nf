@@ -58,7 +58,7 @@ println " "
 read_until_ch = Channel
         .fromPath ( params.read_until, checkIfExists: true )
         .map { file -> tuple(file.baseName, file) }
-        .view()
+        //.view()
 
 
 /************* 
@@ -70,11 +70,26 @@ read_until_ch = Channel
 /************* 
 * SUB WORKFLOWS
 *************/
+workflow rename_fastq_wf {
+    take:   fastq_dir
+            rename_csv
+    main:   rename_fastq(read_until) 
+    emit:   rename_fastq.out.view()
+}
+
+
 
 workflow get_decision_wf {
     take:   read_until
     main:   get_decision(read_until) 
-    emit:   get_decision.out
+    emit:   get_decision.out.view()
+}
+
+workflow create_decision_fastq_wf {
+    take:   decision_files
+            fastq_dir
+    main:   create_decision_fastq(read_until, fastq_dir) 
+    emit:   get_decision.out.view()
 }
 
 /************* 
@@ -97,14 +112,9 @@ def helpMSG() {
     c_dim = "\033[2m";
     log.info """
     .
-    ${c_yellow}Usage examples:${c_reset}
-    nextflow run replikation/What_the_Phage --fasta '*/*.fasta' --cores 20 --max_cores 40 \\
-        --output results -profile local,docker 
 
-    nextflow run phage.nf --fasta '*/*.fasta' --cores 20 \\
-        --output results -profile lsf,singularity \\
-        --cachedir /images/singularity_images \\
-        --databases /databases/WtP_databases/ 
+
+help text
 
 
     """.stripIndent()
