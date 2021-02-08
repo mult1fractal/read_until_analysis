@@ -47,17 +47,17 @@ println " "
 /************* 
 * INPUT HANDLING
 *************/
-if ( workflow.profile == 'standard' ) { "Using default profile [-profile local,docker]" }
+
 // get basecalled dir
-dir_input_ch = Channel
-        .fromPath( params.dir, checkIfExists: true )
-        .map 
-        .view()
+//dir_input_ch = Channel
+ //       .fromPath( params.dir, checkIfExists: true )
+  //      .map 
+  //      .view()
 
 // get read_until.csv
 read_until_ch = Channel
-        .fromPath() params.read_until,checkIfExists: true )
-        .map
+        .fromPath ( params.read_until, checkIfExists: true )
+        .map { file -> tuple(file.baseName, file) }
         .view()
 
 
@@ -65,19 +65,16 @@ read_until_ch = Channel
 * MODULES
 *************/
 
-    include { name_of_modul } from './modules/modulname'
-
-
-
+    include { get_decision } from './modules/get_decision'
 
 /************* 
 * SUB WORKFLOWS
 *************/
 
-workflow fasta_validation_wf {
-    take:   fasta
-    main:   seqkit(input_suffix_check(fasta)) 
-    emit:   seqkit.out
+workflow get_decision_wf {
+    take:   read_until
+    main:   get_decision(read_until) 
+    emit:   get_decision.out
 }
 
 /************* 
@@ -86,9 +83,9 @@ workflow fasta_validation_wf {
 
 workflow {
 
-if (params.setup) { setup_wf() }
+get_decision_wf(read_until_ch)
 
-
+}
 /*************  
 * --help
 *************/
