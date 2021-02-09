@@ -48,11 +48,11 @@ println " "
 * INPUT HANDLING
 *************/
 
-// get basecalled dir
-//dir_input_ch = Channel
- //       .fromPath( params.dir, checkIfExists: true )
-  //      .map 
-  //      .view()
+//get basecalled dir
+dir_input_ch = Channel
+       .fromPath( params.dir, checkIfExists: true, type: 'dir')
+       .map { file -> tuple(file.name, file) }
+       .view()
 
 // get read_until.csv
 read_until_ch = Channel
@@ -66,30 +66,39 @@ read_until_ch = Channel
 *************/
 
     include { get_decision } from './modules/get_decision'
+    include { create_decision_fastq } from './modules/create_decision_fastq.nf'
+   // include { fastq_extract_parser } from './modules/bin/fastq_extract_parser.py'
+    
 
 /************* 
 * SUB WORKFLOWS
 *************/
-workflow rename_fastq_wf {
-    take:   fastq_dir
-            rename_csv
-    main:   rename_fastq(read_until) 
-    emit:   rename_fastq.out.view()
-}
+// workflow rename_fastq_wf {
+//     take:   fastq_dir
+//             rename_csv
+//     main:   rename_fastq(read_until) 
+//     emit:   rename_fastq.out.view()
+// }
 
 
 
 workflow get_decision_wf {
     take:   read_until
-    main:   get_decision(read_until) 
-    emit:   get_decision.out.view()
+    main:   get_decision(read_until).flatten().map { file -> tuple(file.baseName, file) }.view()
+    emit:   get_decision.out
 }
 
 workflow create_decision_fastq_wf {
-    take:   decision_files
-            fastq_dir
-    main:   create_decision_fastq(read_until, fastq_dir) 
-    emit:   get_decision.out.view()
+    take:   fastq_dir
+            decision_files           
+    main:   create_decision_fastq(fastq_dir, decision_files) 
+    emit:   create_decision_fastq.out.view()
+}
+
+workflow nanoplot_wf {
+    take:   fastq
+    main:   nanoplot(fastq)
+    emit:   nanoplot.out
 }
 
 /************* 
@@ -98,8 +107,9 @@ workflow create_decision_fastq_wf {
 
 workflow {
 
-get_decision_wf(read_until_ch)
+create_decision_fastq_wf(dir_input_ch, get_decision_wf(read_until_ch))
 
+//nanoplot_wf(get_decision_fastq.out)
 }
 /*************  
 * --help

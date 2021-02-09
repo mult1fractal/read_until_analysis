@@ -3,6 +3,7 @@ process centrifuge {
       publishDir "${params.output}/${name}/centrifuge/raw", mode: 'copy', pattern: "${name}_centrifuge_filtered.out"
       publishDir "${params.output}/${name}/centrifuge", mode: 'copy', pattern: "${name}_pavian_report_unfiltered.csv"
       publishDir "${params.output}/${name}/centrifuge/raw", mode: 'copy', pattern: "${name}_centrifuge_unfiltered.out"
+      publishDir "${params.output}/filtered_centrifuge", mode: 'copy', pattern: "${name}_pavian_report_filtered.csv
       label 'centrifuge'
     input:
       tuple val(name), file(fastq) 

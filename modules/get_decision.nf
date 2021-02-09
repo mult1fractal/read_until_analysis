@@ -1,10 +1,10 @@
 process get_decision {
-    publishDir "${params.output}/${name}/decision_files", mode: 'copy', pattern: "*_${name}_read_id.txt"
+    publishDir "${params.output}/decision_files", mode: 'copy', pattern: "*_${name}_read_id.txt"
     label 'ubuntu'
     input:
         tuple val(name), path(read_until)
     output:
-        tuple val(name), path("*_read_id.txt")
+        path("*_read_id.txt")
     script:
         """
         ## get decisions of read until file
