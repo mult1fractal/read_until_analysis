@@ -52,14 +52,11 @@ println " "
 dir_input_ch = Channel
        .fromPath( params.dir, checkIfExists: true, type: 'dir')
        .map { file -> tuple(file.name, file) }
-       .view()
 
 // get read_until.csv
 read_until_ch = Channel
         .fromPath ( params.read_until, checkIfExists: true )
         .map { file -> tuple(file.baseName, file) }
-        //.view()
-
 
 /************* 
 * MODULES
@@ -67,8 +64,9 @@ read_until_ch = Channel
 
     include { get_decision } from './modules/get_decision'
     include { create_decision_fastq } from './modules/create_decision_fastq.nf'
-   // include { fastq_extract_parser } from './modules/bin/fastq_extract_parser.py'
-    
+
+
+
 
 /************* 
 * SUB WORKFLOWS
@@ -84,14 +82,16 @@ read_until_ch = Channel
 
 workflow get_decision_wf {
     take:   read_until
-    main:   get_decision(read_until).flatten().map { file -> tuple(file.baseName, file) }.view()
-    emit:   get_decision.out
+    main:   get_decision(read_until)
+    emit:   get_decision.out.flatten().map { file -> tuple(file.baseName, file) }.view()
 }
 
 workflow create_decision_fastq_wf {
     take:   fastq_dir
-            decision_files           
-    main:   create_decision_fastq(fastq_dir, decision_files) 
+            decision_files
+    main:   create_decision_fastq(fastq_dir, decision_files)
+            //create_decision_fastq(fastq_dir, stop_receiving)
+            //create_decision_fastq(fastq_dir, unblock) 
     emit:   create_decision_fastq.out.view()
 }
 
@@ -107,7 +107,9 @@ workflow nanoplot_wf {
 
 workflow {
 
-create_decision_fastq_wf(dir_input_ch, get_decision_wf(read_until_ch))
+get_decision_wf(read_until_ch)
+create_decision_fastq_wf(dir_input_ch, get_decision_wf.out )
+
 
 //nanoplot_wf(get_decision_fastq.out)
 }
@@ -124,7 +126,7 @@ def helpMSG() {
     .
 
 
-help text
+nextflow run adaptive_sampling_analysis.nf --dir /home/mike/bioinformatics/adaptive_sampling_checks/all_fast5_adaptive_sequencing_fast_basecalling/fastq_results/barcode01/ --read_until tests/read_until_aev350_4f8384f1.csv -profile local,docker -work-dir work
 
 
     """.stripIndent()
