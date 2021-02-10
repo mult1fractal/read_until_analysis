@@ -83,7 +83,7 @@ read_until_ch = Channel
 workflow get_decision_wf {
     take:   read_until
     main:   get_decision(read_until)
-    emit:   get_decision.out.flatten().map { file -> tuple(file.baseName, file) }.view()
+    emit:   get_decision.out.view()//.flatten().map { file -> tuple(file.baseName, file) }.view()
 }
 
 workflow create_decision_fastq_wf {
@@ -107,8 +107,8 @@ workflow nanoplot_wf {
 
 workflow {
 
-get_decision_wf(read_until_ch)
-create_decision_fastq_wf(dir_input_ch, get_decision_wf.out )
+create_decision_fastq_wf(dir_input_ch, get_decision_wf(read_until_ch))
+ 
 
 
 //nanoplot_wf(get_decision_fastq.out)

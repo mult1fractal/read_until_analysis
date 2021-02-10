@@ -4,7 +4,7 @@ process get_decision {
     input:
         tuple val(name), path(read_until)
     output:
-        path("*_read_id.txt")
+        tuple val(name), path("*_${name}_read_id.txt")
     script:
         """
         ## get decisions of read until file
