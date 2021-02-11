@@ -64,6 +64,7 @@ read_until_ch = Channel
 
     include { get_decision } from './modules/get_decision'
     include { create_decision_fastq } from './modules/create_decision_fastq.nf'
+    include { nanoplot } from './modules/nanoplot.nf'
 
 
 
@@ -92,7 +93,7 @@ workflow create_decision_fastq_wf {
     main:   create_decision_fastq(fastq_dir, decision_files)
             //create_decision_fastq(fastq_dir, stop_receiving)
             //create_decision_fastq(fastq_dir, unblock) 
-    emit:   create_decision_fastq.out.view()
+    emit:   create_decision_fastq.out.flatten().map { file -> tuple(file.baseName, file) }.view()
 }
 
 workflow nanoplot_wf {
@@ -108,6 +109,7 @@ workflow nanoplot_wf {
 workflow {
 
 create_decision_fastq_wf(dir_input_ch, get_decision_wf(read_until_ch))
+nanoplot_wf(create_decision_fastq_wf.out)
  
 
 

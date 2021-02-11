@@ -5,11 +5,12 @@ process create_decision_fastq {
         tuple val(name), path(dir)
         tuple val(decision), path(decision_file)
     output:
-        tuple val(name), file("*.fastq")
+        path("*.fastq")
     script:
         """
-        for i in *.txt ; do
-            seqkit grep --pattern-file \$i ${dir}/*.fastq >> \$i.fastq
+        for i in *read_id.txt ; do
+            simple_name=\$(echo "\$i" | awk -F"_read_id.txt" '{print \$1}')
+            seqkit grep --pattern-file \$i ${dir}/*.fastq >> \$simple_name.fastq
         done
         """
 }
