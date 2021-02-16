@@ -99,8 +99,10 @@ workflow create_decision_fastq_wf {
 workflow nanoplot_wf {
     take:   fastq
     main:   nanoplot(fastq)
+        //    nanoplot_stats(nanoplot.out[3])
     emit:   nanoplot.out
 }
+
 
 /************* 
 * MAIN WORKFLOWS
@@ -110,6 +112,7 @@ workflow {
 
 create_decision_fastq_wf(dir_input_ch, get_decision_wf(read_until_ch))
 nanoplot_wf(create_decision_fastq_wf.out)
+
  
 
 
